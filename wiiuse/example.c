@@ -49,7 +49,9 @@ void handle_event(struct wiimote_t* wm) {
 			wm->exp.mp.angle_rate_gyro.yaw);
 
 		fd = open(PIPE, O_WRONLY);
+		write(fd, "start\n", strlen("start\n")+1);
 		write(fd, message, strlen(message) +1);
+		write(fd, "stop\n", strlen("stop\n")+1);
 		close(fd);
 
 		printf("%s\n", message);		
