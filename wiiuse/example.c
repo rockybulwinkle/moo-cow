@@ -1,30 +1,4 @@
-/*
- *	wiiuse
- *
- *	Written By:
- *		Michael Laforest	< para >
- *		Email: < thepara (--AT--) g m a i l [--DOT--] com >
- *
- *	Copyright 2006-2007
- *
- *	This file is part of wiiuse.
- *
- *	This program is free software; you can redistribute it and/or modify
- *	it under the terms of the GNU General Public License as published by
- *	the Free Software Foundation; either version 3 of the License, or
- *	(at your option) any later version.
- *
- *	This program is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *	GNU General Public License for more details.
- *
- *	You should have received a copy of the GNU General Public License
- *	along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *	$Header$
- *
- */
+
 
 /**
  *	@file
@@ -37,12 +11,17 @@
 #include <stdio.h>                      /* for printf */
 
 #include "wiiuse.h"                     /* for wiimote_t, classic_ctrl_t, etc */
+#include <fcntl.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/stat.h>
 
 #ifndef WIIUSE_WIN32
 #include <unistd.h>                     /* for usleep */
 #endif
 
 #define MAX_WIIMOTES				1
+#define PIPE					"wiidata"
 
 
 /**
@@ -53,24 +32,27 @@
  *	This function is called automatically by the wiiuse library when an
  *	event occurs on the specified wiimote.
  */
-void handle_event(struct wiimote_t* wm) {
-	static int motion_on = 0;	
+void handle_event(struct wiimote_t* wm) {	
 
 	/* if a button is pressed, report it */
 	if (IS_PRESSED(wm, WIIMOTE_BUTTON_B)) {
-		if(!motion_on){
+		int fd;
+		char message[50] = "";
+		if(!(wm->exp.type == EXP_NUNCHUK)){
 			wiiuse_set_motion_plus(wm, 1);
 			wiiuse_motion_sensing(wm, 1);
-			motion_on = 1;
 		}
-		printf("\n\n--- EVENT [id %i] ---\n", wm->unid);
-		printf("wiimote x  = %d\n", wm->accel.x);
-		printf("wiimote y = %d\n", wm->accel.y);
-		printf("wiimote z   = %d\n", wm->accel.z);
-		printf("Motion+ angular rates (deg/sec): pitch:%03.2f roll:%03.2f yaw:%03.2f\n",
-		       wm->exp.mp.angle_rate_gyro.pitch,
-		       wm->exp.mp.angle_rate_gyro.roll,
-		       wm->exp.mp.angle_rate_gyro.yaw);
+		//X Y Z Pitch Roll Yaw			
+		sprintf(message, "%d %d %d %03.2f %03.2f %03.2f\n",
+			wm->accel.x, wm->accel.y, wm->accel.z,
+			wm->exp.mp.angle_rate_gyro.pitch, wm->exp.mp.angle_rate_gyro.roll,
+			wm->exp.mp.angle_rate_gyro.yaw);
+
+		fd = open(PIPE, O_WRONLY);
+		write(fd, message, strlen(message) +1);
+		close(fd);
+
+		printf("%s\n", message);		
 
 	}
 	
