@@ -31,40 +31,46 @@ def close_c_code():
     os.system("kill `pidof %s`"%WII_CAPTURE)
     rmfifo()
 
+def get_messages():
+    with open(WII_DATA_FILENAME,"r") as f:
+        for line in f:
+            if line=='\x00':
+                continue
+            msg = line.strip().replace("\x00", "").split()
+            yield msg
+
 def get_samples():
     samples = SequentialDataSet(6, 2)
     num_samples = 0
-    while True:
-        with open(WII_DATA_FILENAME,"r") as f:
-            msg = f.read().split()
-
-        if msg[0] is "start":
-            print "recording data"
-            samples.newSequence()
-        elif msg[0] is "stop":
-            print "done recording data, waiting"
-            if num_samples > 10:
-                break
-            num_samples += 1
-        elif len(msg) > 1:
-            print msg
-            data = map(float, msg)[0:6]
-            samples.appendLinked(tuple(data), (0,1) if num_samples < 5 else (1,0))
+    done = False
+    while not done:
+        for msg in get_messages():
+            if msg[0] == "start":
+                print "recording data"
+                samples.newSequence()
+            elif msg[0] == "stop":
+                print "done recording data, waiting"
+                if num_samples > 10:
+                    done = True
+                num_samples += 1
+            elif len(msg) > 1:
+                print msg
+                data = map(float, msg)[0:6]
+                samples.appendLinked(tuple(data), (0,1) if num_samples < 5 else (1,0))
 
     return samples
 
 def test_net(net):
     while True:
-        with open(WII_DATA_FILENAME,"r") as f:
-            msg = f.read().split()
+        for msg in get_messages():
 
-        if msg[0] is "start":
-            print "recording data"
-        elif msg[0] is "stop":
-            print "done recording data, waiting"
-        elif len(msg) > 1:
-            data = map(float, msg)[0:6]
-            net.activate(data)
+            if msg[0] is "start":
+                print "recording data"
+            elif msg[0] is "stop":
+                print "done recording data, waiting"
+            elif len(msg) > 1:
+                data = map(float, msg)[0:6]
+                net.activate(data)
 
    
 

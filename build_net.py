@@ -34,24 +34,8 @@ def get_set(direction):
     output = [int((n - old_min) / old_range * new_range + new_min) for n in i]
     return output
 
-def train():
-    inputs = 1
-    outputs = 2
-    net = build_network(inputs, 10, outputs)
-
-    ds = SequentialDataSet(inputs, outputs)
-    for _ in range(20):
-        ds.newSequence()
-        for i in get_set(-1):
-            ds.appendLinked((i,), (0,1))
-    for _ in range(20):
-        ds.newSequence()
-        for i in get_set(1):
-            ds.appendLinked((i,), (1,0))
-
-
+def train(net, ds):
     net.randomize()
-
     trainer = BackpropTrainer(net, ds)
 
     for _ in range(100):
@@ -59,7 +43,6 @@ def train():
         print x
         if x < .01:
             break
-    return net
 
 
 
