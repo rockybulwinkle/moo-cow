@@ -33,11 +33,14 @@
  *	event occurs on the specified wiimote.
  */
 void handle_event(struct wiimote_t* wm) {	
+	static int prev_state = 0;
+	static int current_state = 0;
+	int fd;
+	char message[50] = "";
 
 	/* if a button is pressed, report it */
 	if (IS_PRESSED(wm, WIIMOTE_BUTTON_B)) {
-		int fd;
-		char message[50] = "";
+		current_state = 1;
 		if(!(wm->exp.type == EXP_NUNCHUK)){
 			wiiuse_set_motion_plus(wm, 1);
 			wiiuse_motion_sensing(wm, 1);
@@ -49,15 +52,26 @@ void handle_event(struct wiimote_t* wm) {
 			wm->exp.mp.angle_rate_gyro.yaw);
 
 		fd = open(PIPE, O_WRONLY);
-		write(fd, "start\n", strlen("start\n")+1);
 		write(fd, message, strlen(message) +1);
-		write(fd, "stop\n", strlen("stop\n")+1);
 		close(fd);
 
 		printf("%s\n", message);		
-
+	} else{
+		current_state=0;
 	}
-	
+
+	if(current_state != prev_state){
+		if(current_state){
+			fd = open(PIPE, O_WRONLY);
+			write(fd, "start\n", strlen("start\n") +1);
+			close(fd);		
+		}else{
+			fd = open(PIPE, O_WRONLY);
+			write(fd, "stop\n", strlen("stop\n") +1);
+			close(fd);
+		}
+	}
+	prev_state = current_state;
 	
 }
 
