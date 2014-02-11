@@ -47,6 +47,8 @@ def get_samples():
         for msg in get_messages():
             if msg[0] == "start":
                 print "recording data"
+                for line in get_messages():
+                    pass
                 samples.newSequence()
             elif msg[0] == "stop":
                 print "done recording data, waiting"
@@ -65,6 +67,8 @@ def test_net(net):
     while True:
         for msg in get_messages():
             if msg[0] == "start":
+                for line in get_messages():
+                    pass
                 print "resetting"
                 net.reset()
             elif len(msg) > 1:
