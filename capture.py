@@ -50,36 +50,42 @@ def get_samples():
                 samples.newSequence()
             elif msg[0] == "stop":
                 print "done recording data, waiting"
-                if num_samples > 10:
+                if not num_samples < 20:
                     done = True
                 num_samples += 1
+                print "class is %s"%"(0,1)" if num_samples < 10 else "(1,0)"
             elif len(msg) > 1:
                 print msg
                 data = map(float, msg)[0:6]
-                samples.appendLinked(tuple(data), (0,1) if num_samples < 5 else (1,0))
+                samples.appendLinked(tuple(data), (0,1) if num_samples < 10 else (1,0))
 
     return samples
 
 def test_net(net):
     while True:
         for msg in get_messages():
-
-            if msg[0] is "start":
-                print "recording data"
-            elif msg[0] is "stop":
-                print "done recording data, waiting"
+            if msg[0] == "start":
+                print "resetting"
+                net.reset()
             elif len(msg) > 1:
                 data = map(float, msg)[0:6]
-                net.activate(data)
+                out =  net.activate(data)
+                print out
+                if out[0] < out[1]:
+                    print "left"
+                else:
+                    print "right"
+
 
    
 
 if __name__=="__main__":
     atexit.register(signal_handler)
     launch_c_code() 
-    net = build_net.build_network(6, 10, 2)
+    net = build_net.build_network(6, 15, 2)
     samples = get_samples()
     print "training"
+    print samples
     build_net.train(net, samples)
     print "done training, now enter test data"
     test_net(net)
