@@ -17,7 +17,7 @@ def build_network(num_inputs, num_hidden, num_output):
     n.addOutputModule(LinearLayer(num_output, name="out")) #add output layer
     n.addConnection(FullConnection(n["in"], n["hidden"])) #connect the input to the hidden
     n.addConnection(FullConnection(n["hidden"], n["out"])) #connect the hidden to the output
-    n.addRecurrentConnection(FullConnection(n["hidden"], n["hidden"], name="recur")) #connect output of current hidden layer to input of the hidden layer for the next activation
+    n.addRecurrentConnection(FullConnection(n["out"], n["hidden"], name="recur")) #connect output of current hidden layer to input of the hidden layer for the next activation
     
     n.sortModules() #done!
 
@@ -36,9 +36,9 @@ def get_set(direction):
 
 def train(net, ds):
     net.randomize()
-    trainer = BackpropTrainer(net, ds)
+    trainer = BackpropTrainer(net, ds, learningrate=.001, batchlearning=True)
 
-    for _ in range(100):
+    for _ in range(500):
         x =  trainer.train()
         print x
         if x < .01:
