@@ -1,5 +1,8 @@
 *.py[cod]
 
+#compiled files
+wii_capture
+
 # C extensions
 *.so
 
