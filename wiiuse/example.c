@@ -87,6 +87,16 @@ void handle_event(struct wiimote_t* wm) {
 */
 }
 
+void handle_ctrl_status(struct wiimote_t* wm) {
+	printf("\n\n--- CONTROLLER STATUS [wiimote id %i] ---\n", wm->unid);
+
+	printf("attachment:      %i\n", wm->exp.type);
+	printf("speaker:         %i\n", WIIUSE_USING_SPEAKER(wm));
+	printf("ir:              %i\n", WIIUSE_USING_IR(wm));
+	printf("leds:            %i %i %i %i\n", WIIUSE_IS_LED_SET(wm, 1), WIIUSE_IS_LED_SET(wm, 2), WIIUSE_IS_LED_SET(wm, 3), WIIUSE_IS_LED_SET(wm, 4));
+	printf("battery:         %f %%\n", wm->battery_level);
+}
+
 
 /**
  *	@brief Callback that handles a disconnection event.
@@ -174,13 +184,7 @@ int main(int argc, char** argv) {
 	wiiuse_set_leds(wiimotes[0], WIIMOTE_LED_1);
 	wiiuse_rumble(wiimotes[0], 1);	
 
-	/*
-	 *	Turn on Motion sensing and Motion+ sensing
-	 */
-	wiiuse_motion_sensing(wiimotes[0], 1);
-	wiiuse_set_motion_plus(wiimotes[0], 1);
-	printf("%d\n", WIIUSE_USING_EXP(wiimotes[0]));
-
+	
 #ifndef WIIUSE_WIN32
 	usleep(200000);
 #else
@@ -188,6 +192,13 @@ int main(int argc, char** argv) {
 #endif
 
 	wiiuse_rumble(wiimotes[0], 0);
+
+
+	/*
+	 *	Turn on Motion sensing and Motion+ sensing
+	 */
+	wiiuse_motion_sensing(wiimotes[0], 1);
+	wiiuse_set_motion_plus(wiimotes[0], 1);
 
 	/*
 	 *	This is the main loop
@@ -211,7 +222,9 @@ int main(int argc, char** argv) {
 					/* a generic event occurred */
 					handle_event(wiimotes[0]);
 					break;
-
+				case WIIUSE_STATUS:
+					handle_ctrl_status(wiimotes[0]);
+					break;
 				case WIIUSE_DISCONNECT:
 				case WIIUSE_UNEXPECTED_DISCONNECT:
 					/* the wiimote disconnected */
