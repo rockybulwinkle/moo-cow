@@ -82,7 +82,7 @@ def test_net(net):
 if __name__=="__main__":
     atexit.register(signal_handler)
     launch_c_code() 
-    net = build_net.build_network(6, 15, 2)
+    net = build_net.build_network(6, 5, 2)
     samples = get_samples()
     print "training"
     print samples
