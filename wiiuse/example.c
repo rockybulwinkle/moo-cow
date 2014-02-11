@@ -114,39 +114,14 @@ int main(int argc, char** argv) {
 	wiimote** wiimotes;
 	int found, connected;
 
-	/*
-	 *	Initialize an array of wiimote objects.
-	 *
-	 *	The parameter is the number of wiimotes I want to create.
-	 */
 	wiimotes =  wiiuse_init(1);
-	
-	/*
-	 *	Find wiimote devices
-	 *
-	 *	Now we need to find some wiimotes.
-	 *	Give the function the wiimote array we created, and tell it there
-	 *	are MAX_WIIMOTES wiimotes we are interested in.
-	 *
-	 *	Set the timeout to be 5 seconds.
-	 *
-	 *	This will return the number of actual wiimotes that are in discovery mode.
-	 */
+
 	found = wiiuse_find(wiimotes, 1, 5);
 	if (!found) {
 		printf("No wiimotes found.\n");
 		return 0;
 	}
 
-	/*
-	 *	Connect to the wiimotes
-	 *
-	 *	Now that we found some wiimotes, connect to them.
-	 *	Give the function the wiimote array and the number
-	 *	of wiimote devices we found.
-	 *
-	 *	This will return the number of established connections to the found wiimotes.
-	 */
 	connected = wiiuse_connect(wiimotes, MAX_WIIMOTES);
 	if (connected) {
 		printf("Connected to %i wiimotes (of %i found).\n", connected, found);
@@ -155,10 +130,6 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
-	/*
-	 *	Now set the LEDs and rumble for a second so it's easy
-	 *	to tell which wiimotes are connected (just like the wii does).
-	 */
 	wiiuse_set_leds(wiimotes[0], WIIMOTE_LED_1);
 	wiiuse_rumble(wiimotes[0], 1);	
 
@@ -170,24 +141,11 @@ int main(int argc, char** argv) {
 #endif
 
 	wiiuse_rumble(wiimotes[0], 0);
-
-	/*
-	 *	This is the main loop
-	 *
-	 *	wiiuse_poll() needs to be called with the wiimote array
-	 *	and the number of wiimote structures in that array
-	 *	(it doesn't matter if some of those wiimotes are not used
-	 *	or are not connected).
-	 *
-	 *	This function will set the event flag for each wiimote
-	 *	when the wiimote has things to report.
-	 */
+	
+	wiiuse_set_flags(wiimotes[0], WIIUSE_CONTINUOUS,0 );
 	while (any_wiimote_connected(wiimotes, MAX_WIIMOTES)) {
 		if (wiiuse_poll(wiimotes, MAX_WIIMOTES)) {
-			/*
-			 *	This happens if something happened on any wiimote.
-			 *	So go through each one and check if anything happened.
-			 */
+
 			switch (wiimotes[0]->event) {
 				case WIIUSE_EVENT:
 					/* a generic event occurred */
@@ -204,9 +162,6 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	/*
-	 *	Disconnect the wiimotes
-	 */
 	wiiuse_cleanup(wiimotes, MAX_WIIMOTES
 );
 
