@@ -54,10 +54,15 @@
  *	event occurs on the specified wiimote.
  */
 void handle_event(struct wiimote_t* wm) {
-
+	static int motion_on = 0;	
 
 	/* if a button is pressed, report it */
 	if (IS_PRESSED(wm, WIIMOTE_BUTTON_B)) {
+		if(!motion_on){
+			wiiuse_set_motion_plus(wm, 1);
+			wiiuse_motion_sensing(wm, 1);
+			motion_on = 1;
+		}
 		printf("\n\n--- EVENT [id %i] ---\n", wm->unid);
 		printf("wiimote x  = %d\n", wm->accel.x);
 		printf("wiimote y = %d\n", wm->accel.y);
@@ -68,23 +73,8 @@ void handle_event(struct wiimote_t* wm) {
 		       wm->exp.mp.angle_rate_gyro.yaw);
 
 	}
-/*
-	// if the accelerometer is turned on then print angles 
-	if (WIIUSE_USING_ACC(wm)) {
-		printf("wiimote x  = %d\n", wm->accel.x);
-		printf("wiimote y = %d\n", wm->accel.y);
-		printf("wiimote z   = %d\n", wm->accel.z);
-
-	}
-
-	if (wm->exp.type == EXP_MOTION_PLUS ||
-	        wm->exp.type == EXP_MOTION_PLUS_NUNCHUK) {
-		printf("Motion+ angular rates (deg/sec): pitch:%03.2f roll:%03.2f yaw:%03.2f\n",
-		       wm->exp.mp.angle_rate_gyro.pitch,
-		       wm->exp.mp.angle_rate_gyro.roll,
-		       wm->exp.mp.angle_rate_gyro.yaw);
-	}
-*/
+	
+	
 }
 
 void handle_ctrl_status(struct wiimote_t* wm) {
@@ -192,13 +182,6 @@ int main(int argc, char** argv) {
 #endif
 
 	wiiuse_rumble(wiimotes[0], 0);
-
-
-	/*
-	 *	Turn on Motion sensing and Motion+ sensing
-	 */
-	wiiuse_motion_sensing(wiimotes[0], 1);
-	wiiuse_set_motion_plus(wiimotes[0], 1);
 
 	/*
 	 *	This is the main loop
