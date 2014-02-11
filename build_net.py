@@ -38,7 +38,7 @@ def train(net, ds):
     net.randomize()
     trainer = BackpropTrainer(net, ds, learningrate=.001, batchlearning=True)
 
-    for _ in range(500):
+    for _ in range(50):
         x =  trainer.train()
         print x
         if x < .01:

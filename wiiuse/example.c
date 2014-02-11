@@ -46,10 +46,10 @@ void handle_event(struct wiimote_t* wm) {
 			wiiuse_motion_sensing(wm, 1);
 		}
 		//X Y Z Pitch Roll Yaw			
-		sprintf(message, "%d %d %d %03.2f %03.2f %03.2f\n",
+		sprintf(message, "%d %d %d %d %d %d\n",
 			wm->accel.x, wm->accel.y, wm->accel.z,
-			wm->exp.mp.angle_rate_gyro.pitch, wm->exp.mp.angle_rate_gyro.roll,
-			wm->exp.mp.angle_rate_gyro.yaw);
+			wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
+			wm->exp.mp.raw_gyro.yaw);
 
 		fd = open(PIPE, O_WRONLY);
 		write(fd, message, strlen(message) +1);
