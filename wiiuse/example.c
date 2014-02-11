@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
 	 */
 	wiiuse_motion_sensing(wiimotes[0], 1);
 	wiiuse_set_motion_plus(wiimotes[0], 1);
-	printf("%d\n", wiimotes[0]->exp.type == EXP_MOTION_PLUS);
+	printf("%d\n", WIIUSE_USING_EXP(wiimotes[0]));
 
 #ifndef WIIUSE_WIN32
 	usleep(200000);
