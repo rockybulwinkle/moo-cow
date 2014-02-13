@@ -39,6 +39,30 @@ def get_messages():
             msg = line.strip().replace("\x00", "").split()
             yield msg
 
+def get_sample_directories(sample_dir):
+    import os
+    if sample_dir[-1]!="/":
+        sample_dir += "/"
+    return map(lambda x: sample_dir+x,os.walk(sample_dir).next()[1])
+def get_files_in_directory(directory):
+    return map(lambda x: sample_dir+x,os.walk(sample_dir).next()[2])
+
+def load_samples():
+    sample_classes = dict()
+    for directory in sorted(get_sample_directories("samples")): #get list of motion sample directories
+        sample_classes[directory] = [] #create entry in dictionary
+        for sample in get_files_in_directory(directory):  #get sample files for that motion sample
+            sample_classes[directory].append(load_file(sample, directory))
+
+def load_file(sample_file, class_, sample_dict):
+    samples = []
+    with open(sample_file, "r") as f:
+        for line in f:
+            line = line.split(",")
+            line = map(float, line)
+            samples.append(line)
+    return samples
+            
 def get_samples():
     samples = SequentialDataSet(6, 2)
     num_samples = 0
@@ -60,8 +84,9 @@ def get_samples():
                 print msg
                 data = map(float, msg)[0:6]
                 samples.appendLinked(tuple(data), (0,1) if num_samples < 10 else (1,0))
-
     return samples
+
+
 
 def test_net(net):
     while True:
@@ -81,8 +106,6 @@ def test_net(net):
                     print "right"
 
 
-   
-
 if __name__=="__main__":
     atexit.register(signal_handler)
     launch_c_code() 
@@ -94,3 +117,4 @@ if __name__=="__main__":
     print "done training, now enter test data"
     test_net(net)
     close_c_code()
+
