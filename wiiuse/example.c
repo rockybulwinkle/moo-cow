@@ -32,7 +32,6 @@
  *	@param wm		Pointer to a wiimote_t structure.
  *
  *	This function is called automatically by the wiiuse library when an
- *	event occurs on the specified wiimote.
  */
 void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int mode) {	
 	static int prev_state = 0;
@@ -42,7 +41,7 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 
 	/* if a button is pressed, report it */
 	if (IS_PRESSED(wm, WIIMOTE_BUTTON_B)) {
-		current_state = 1;
+		current_state = 1;	
 		if(!(wm->exp.type == EXP_NUNCHUK)){
 			wiiuse_set_motion_plus(wm, 1);
 			wiiuse_motion_sensing(wm, 1);
@@ -57,6 +56,7 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 			fd = open(PIPE, O_WRONLY);
 			write(fd, message, strlen(message) +1);
 			close(fd);
+			printf("%s\n", message);
 		}else{//print to file
 			FILE * fp;
 			char filepath[100]="";
@@ -67,22 +67,32 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 				wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
 				wm->exp.mp.raw_gyro.yaw);
 			fclose(fp);
+			printf( "%d %d %d %d %d %d\n",
+				wm->accel.x, wm->accel.y, wm->accel.z,
+				wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
+				wm->exp.mp.raw_gyro.yaw);		
 		}
 
-		printf("%s\n", message);		
+				
 	} else{
 		current_state=0;
 	}
 
 	if(current_state != prev_state){
 		if(current_state){
-			fd = open(PIPE, O_WRONLY);
-			write(fd, "start\n", strlen("start\n") +1);
-			close(fd);		
+			if(mode ==0){
+				fd = open(PIPE, O_WRONLY);
+				write(fd, "start\n", strlen("start\n") +1);
+				close(fd);
+			}		
 		}else{
-			fd = open(PIPE, O_WRONLY);
-			write(fd, "stop\n", strlen("stop\n") +1);
-			close(fd);
+			if(mode==0){
+				fd = open(PIPE, O_WRONLY);
+				write(fd, "stop\n", strlen("stop\n") +1);
+				close(fd);
+			}else{
+				*num_samples = *num_samples + 1;
+			}
 		}
 	}
 	prev_state = current_state;
@@ -147,6 +157,7 @@ int main(int argc, char** argv) {
 		char size[10];
 
 		strcat(save_path, "samples/");
+		mkdir(save_path, 0755);
 		if(commandType == 1){
 			strcat(save_path, "simple/");
 		}else if(commandType == 2){
@@ -155,6 +166,7 @@ int main(int argc, char** argv) {
 			printf("Invalid argument\n");
 			return -1;
 		}
+		mkdir(save_path, 0755);
 		strcat(save_path, argv[1]);
 		strcat(save_path, "/");
 		mkdir(save_path, 0755);
