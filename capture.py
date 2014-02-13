@@ -8,61 +8,17 @@ import atexit
 import time
 import build_net
 from pybrain.datasets            import SequentialDataSet
-
-WII_DATA_FILENAME = "wiidata"
-WII_CAPTURE = "wiiuse/wii_capture"
-
-def signal_handler():
-    print "exiting"
-    close_c_code()
-    exit(0)
-
-def mkfifo():
-    os.system("mkfifo %s"%WII_DATA_FILENAME)
-
-def rmfifo():
-    os.system("rm -f %s"%WII_DATA_FILENAME)
-
-def launch_c_code():
-    mkfifo()
-    os.system(WII_CAPTURE + " 2>&1 1>/dev/null&")
-
-def close_c_code():
-    os.system("kill `pidof %s`"%WII_CAPTURE)
-    rmfifo()
+import globals
+import startup
 
 def get_messages():
-    with open(WII_DATA_FILENAME,"r") as f:
+    with open(globals.WII_DATA_FILENAME,"r") as f:
         for line in f:
             if line=='\x00':
                 continue
             msg = line.strip().replace("\x00", "").split()
             yield msg
 
-def get_sample_directories(sample_dir):
-    import os
-    if sample_dir[-1]!="/":
-        sample_dir += "/"
-    return map(lambda x: sample_dir+x,os.walk(sample_dir).next()[1])
-def get_files_in_directory(directory):
-    return map(lambda x: sample_dir+x,os.walk(sample_dir).next()[2])
-
-def load_samples():
-    sample_classes = dict()
-    for directory in sorted(get_sample_directories("samples")): #get list of motion sample directories
-        sample_classes[directory] = [] #create entry in dictionary
-        for sample in get_files_in_directory(directory):  #get sample files for that motion sample
-            sample_classes[directory].append(load_file(sample, directory))
-
-def load_file(sample_file, class_, sample_dict):
-    samples = []
-    with open(sample_file, "r") as f:
-        for line in f:
-            line = line.split(",")
-            line = map(float, line)
-            samples.append(line)
-    return samples
-            
 def get_samples():
     samples = SequentialDataSet(6, 2)
     num_samples = 0
@@ -107,8 +63,7 @@ def test_net(net):
 
 
 if __name__=="__main__":
-    atexit.register(signal_handler)
-    launch_c_code() 
+    startup.launch_c_code() 
     net = build_net.build_network(6, 5, 2)
     samples = get_samples()
     print "training"
@@ -116,5 +71,6 @@ if __name__=="__main__":
     build_net.train(net, samples)
     print "done training, now enter test data"
     test_net(net)
-    close_c_code()
+    startup.close_c_code()
+    #print load_samples()
 
