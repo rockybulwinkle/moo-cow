@@ -1,6 +1,9 @@
 #!/usr/bin/env python2
 # vim:tabstop=4:shiftwidth=4:smarttab:expandtab:softtabstop=4:autoindent:
 
+from pybrain.datasets            import SequentialDataSet
+import globals
+
 def get_sample_directories(sample_dir):
     import os
     if sample_dir[-1]!="/":
@@ -29,4 +32,21 @@ def load_file(sample_file, class_):
             line = map(float, line)
             samples.append(line)
     return samples
- 
+
+def make_sequential_training_set():
+    samples = load_samples()
+    num_classes = len(samples.keys())
+    ds = SequentialDataSet(globals.NUM_INPUTS, num_classes)
+
+    for idx,key in enumerate(sorted(samples.keys())):
+        output = [0]*num_classes
+        output[idx] = 1
+        for sample in samples[key]:
+            ds.newSequence()
+            for point in sample:
+                ds.appendLinked(tuple(point), output)
+
+    return ds
+
+        
+        
