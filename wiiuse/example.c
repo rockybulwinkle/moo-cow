@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <string.h>
 
 #ifndef WIIUSE_WIN32
 #include <unistd.h>                     /* for usleep */
@@ -22,6 +23,7 @@
 
 #define MAX_WIIMOTES				1
 #define PIPE					"wiidata"
+#define SAMPLES					"samples"
 
 
 /**
@@ -32,7 +34,7 @@
  *	This function is called automatically by the wiiuse library when an
  *	event occurs on the specified wiimote.
  */
-void handle_event(struct wiimote_t* wm) {	
+void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int mode) {	
 	static int prev_state = 0;
 	static int current_state = 0;
 	int fd;
@@ -45,15 +47,27 @@ void handle_event(struct wiimote_t* wm) {
 			wiiuse_set_motion_plus(wm, 1);
 			wiiuse_motion_sensing(wm, 1);
 		}
-		//X Y Z Pitch Roll Yaw			
-		sprintf(message, "%d %d %d %d %d %d\n",
-			wm->accel.x, wm->accel.y, wm->accel.z,
-			wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
-			wm->exp.mp.raw_gyro.yaw);
-
-		fd = open(PIPE, O_WRONLY);
-		write(fd, message, strlen(message) +1);
-		close(fd);
+		//X Y Z Pitch Roll Yaw
+		if(mode == 0){//print to pipe			
+			sprintf(message, "%d %d %d %d %d %d\n",
+				wm->accel.x, wm->accel.y, wm->accel.z,
+				wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
+				wm->exp.mp.raw_gyro.yaw);
+	
+			fd = open(PIPE, O_WRONLY);
+			write(fd, message, strlen(message) +1);
+			close(fd);
+		}else{//print to file
+			FILE * fp;
+			char filepath[100]="";
+			sprintf(filepath,"%s%d",save_path, *num_samples);
+			fp = fopen(filepath, "ab+");
+			fprintf(fp, "%d %d %d %d %d %d\n",
+				wm->accel.x, wm->accel.y, wm->accel.z,
+				wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
+				wm->exp.mp.raw_gyro.yaw);
+			fclose(fp);
+		}
 
 		printf("%s\n", message);		
 	} else{
@@ -112,7 +126,47 @@ short any_wiimote_connected(wiimote** wm, int wiimotes) {
  */
 int main(int argc, char** argv) {
 	wiimote** wiimotes;
-	int found, connected;
+	int found, connected, mode, commandType, num_samples;
+	//Mode = 1 save training data. Mode = 0 send data to pipe 
+	char save_path[100] = "";
+	
+	
+	if(argc == 1){
+		mode = 0;
+	} else if(argc == 3){
+		mode = 1;
+		commandType = atoi(argv[2]);
+	} else{
+		printf("This program only accepts zero or two  argument\n");
+		return -1;
+	} 
+
+	if(mode == 1){
+		FILE * ls;
+		char command[100] = "ls -il ";
+		char size[10];
+
+		strcat(save_path, "samples/");
+		if(commandType == 1){
+			strcat(save_path, "simple/");
+		}else if(commandType == 2){
+			strcat(save_path, "advanced/");
+		} else{
+			printf("Invalid argument\n");
+			return -1;
+		}
+		strcat(save_path, argv[1]);
+		strcat(save_path, "/");
+		mkdir(save_path, 0755);
+
+		strcat(command, save_path);
+		strcat(command, " | wc -l");
+		
+		ls = popen(command, "r");
+		fread(&size, sizeof(char), 5, ls);
+		num_samples = atoi(size) -1;
+		pclose(ls);
+	}	
 
 	wiimotes =  wiiuse_init(1);
 
@@ -149,7 +203,7 @@ int main(int argc, char** argv) {
 			switch (wiimotes[0]->event) {
 				case WIIUSE_EVENT:
 					/* a generic event occurred */
-					handle_event(wiimotes[0]);
+					handle_event(wiimotes[0], save_path, &num_samples, mode);
 					break;
 				case WIIUSE_DISCONNECT:
 				case WIIUSE_UNEXPECTED_DISCONNECT:
