@@ -20,9 +20,11 @@ def get_messages():
             yield msg
 
 def get_samples():
-    samples = SequentialDataSet(6, 2)
-    num_samples = 0
+    samples = SequentialDataSet(6, 4)
+    num_samples = 1
     done = False
+    class_ = 0
+    class_output = [1, 0, 0, 0]
     while not done:
         for msg in get_messages():
             if msg[0] == "start":
@@ -30,21 +32,30 @@ def get_samples():
                 for line in get_messages():
                     pass
                 samples.newSequence()
+                class_output = [0]*4
+                class_output[class_] = 1
+                print "hi"
+
             elif msg[0] == "stop":
                 print "done recording data, waiting"
-                if not num_samples < 20:
+                if num_samples % 10 == 0:
+                    class_ += 1
+                if class_ == 4:
                     done = True
                 num_samples += 1
-                print "class is %s"%"(0,1)" if num_samples < 10 else "(1,0)"
+                print "class is %s"%str(class_output)
+
             elif len(msg) > 1:
                 print msg
                 data = map(float, msg)[0:6]
-                samples.appendLinked(tuple(data), (0,1) if num_samples < 10 else (1,0))
+                print class_output
+                samples.appendLinked(tuple(data), class_output)
     return samples
 
 
 
 def test_net(net):
+    directions = ["left", "right", "up", "down"]
     while True:
         for msg in get_messages():
             if msg[0] == "start":
@@ -56,15 +67,14 @@ def test_net(net):
                 data = map(float, msg)[0:6]
                 out =  net.activate(data)
                 print out
-                if out[0] < out[1]:
-                    print "left"
-                else:
-                    print "right"
+                out = zip(out, [0,1,2,3])
+                print directions[max(out, key=lambda x: x[1])[1]]
+
 
 
 if __name__=="__main__":
     startup.launch_c_code() 
-    net = build_net.build_network(6, 5, 2)
+    net = build_net.build_network(6, 5, 4)
     samples = get_samples()
     print "training"
     print samples
