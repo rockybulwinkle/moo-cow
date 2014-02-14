@@ -25,13 +25,14 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 			wiiuse_set_motion_plus(wm, 1);
 			wiiuse_motion_sensing(wm, 1);
 		}
+
+		sprintf(message, "%f %f %f %d %d %d\n",
+			wm->gforce.x, wm->gforce.y, wm->gforce.z,
+			wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
+			wm->exp.mp.raw_gyro.yaw);
+
 		//X Y Z Pitch Roll Yaw
 		if(mode == 0){//print to pipe			
-			sprintf(message, "%d %d %d %d %d %d\n",
-				wm->accel.x, wm->accel.y, wm->accel.z,
-				wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
-				wm->exp.mp.raw_gyro.yaw);
-	
 			fd = open(PIPE, O_WRONLY);
 			write(fd, message, strlen(message) +1);
 			close(fd);
@@ -40,17 +41,15 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 			char filepath[100]="";
 			sprintf(filepath,"%s%d",save_path, *num_samples); //Create path to file for current training sample
 			fp = fopen(filepath, "ab+");
-			fprintf(fp, "%d %d %d %d %d %d\n",
-				wm->accel.x, wm->accel.y, wm->accel.z,
-				wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
-				wm->exp.mp.raw_gyro.yaw);
+			fputs(message, fp);
 			fclose(fp);
 		
 		}
-		printf( "%d %d %d %d %d %d\n",
+		printf( "%d %d %d %d %d %d\n gforce: %f %f %f\n",
 			wm->accel.x, wm->accel.y, wm->accel.z,
 			wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
-			wm->exp.mp.raw_gyro.yaw);
+			wm->exp.mp.raw_gyro.yaw,
+            wm->gforce.x, wm->gforce.y, wm->gforce.z);
         				
 	} else{
 		current_state=0; //B is not currently being pressed
