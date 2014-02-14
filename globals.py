@@ -3,5 +3,5 @@
 
 WII_DATA_FILENAME = "wiidata"
 WII_CAPTURE = "wiiuse/wii_capture"
-SAMPLES_DIR = "samples"
+SIMPLE_SAMPLES_DIR = "wiiuse/samples/simple"
 NUM_INPUTS = 6

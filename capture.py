@@ -10,6 +10,7 @@ import build_net
 from pybrain.datasets            import SequentialDataSet
 import globals
 import startup
+import load_samples
 
 def get_messages():
     with open(globals.WII_DATA_FILENAME,"r") as f:
@@ -55,7 +56,7 @@ def get_samples():
 
 
 def test_net(net):
-    directions = ["left", "right", "up", "down"]
+    directions = sorted(load_samples.load_samples().keys())
     while True:
         for msg in get_messages():
             if msg[0] == "start":
@@ -67,15 +68,16 @@ def test_net(net):
                 data = map(float, msg)[0:6]
                 out =  net.activate(data)
                 print out
-                out = zip(out, [0,1,2,3])
-                print directions[max(out, key=lambda x: x[1])[1]]
+                out = zip(out, list(range(len(directions))))
+                print directions[max(out, key=lambda x: x[0])[1]]
 
 
 
 if __name__=="__main__":
     startup.launch_c_code() 
-    net = build_net.build_network(6, 5, 4)
-    samples = get_samples()
+    net = build_net.build_network(6, 10, 4)
+    #samples = get_samples()
+    samples = load_samples.load_sequential_training_set()
     print "training"
     print samples
     build_net.train(net, samples)

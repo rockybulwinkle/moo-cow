@@ -18,7 +18,7 @@ def get_files_in_directory(directory):
 
 def load_samples():
     sample_classes = dict()
-    for directory in sorted(get_sample_directories(globals.SAMPLES_DIR)): #get list of motion sample directories
+    for directory in sorted(get_sample_directories(globals.SIMPLE_SAMPLES_DIR)): #get list of motion sample directories
         sample_classes[directory] = [] #create entry in dictionary
         for sample in get_files_in_directory(directory):  #get sample files for that motion sample
             sample_classes[directory].append(load_file(sample, directory))
@@ -28,12 +28,12 @@ def load_file(sample_file, class_):
     samples = []
     with open(sample_file, "r") as f:
         for line in f:
-            line = line.split(",")
+            line = line.split()
             line = map(float, line)
             samples.append(line)
     return samples
 
-def make_sequential_training_set():
+def load_sequential_training_set():
     samples = load_samples()
     num_classes = len(samples.keys())
     ds = SequentialDataSet(globals.NUM_INPUTS, num_classes)
@@ -49,4 +49,4 @@ def make_sequential_training_set():
     return ds
 
         
-        
+print load_samples() 
