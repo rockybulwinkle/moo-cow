@@ -85,29 +85,35 @@ int main(int argc, char** argv) {
 	char save_path[100] = "";
 	
 	
-	if(argc == 1){
+	if(argc == 1){ //Send data through pipe
 		mode = 0;
-	} else if(argc == 3){
+	} else if(argc == 2){ //Save data as simple gesture data
+        mode = 1;
+        commandType = 0;
+    }else if(argc == 3){ //Save data as either simple or advanced gesture data
 		mode = 1;
-		commandType = atoi(argv[2]);
+		commandType = atoi(argv[2]); //sets whether to save simple or advanced gestures
 	} else{
-		printf("This program only accepts zero or two  argument\n");
+		printf("The program can be run in one of three ways:\n"
+                "wii_capture\n"
+                "wii_capture <gesture name>\n"
+                "wii_capture <gesutre name> <mode(0/1)>\n");
 		return -1;
 	} 
 
 	if(mode == 1){
 		FILE * ls;
-		char command[100] = "ls -il ";
-		char size[10];
+		char command[100] = "ls -l "; //Lists the number of files in a directory (plus one extra line)
+		char size[10]; //number of files in directory
 
 		strcat(save_path, "samples/");
 		mkdir(save_path, 0755);
-		if(commandType == 1){
+		if(commandType == 0){
 			strcat(save_path, "simple/");
-		}else if(commandType == 2){
+		}else if(commandType == 1){
 			strcat(save_path, "advanced/");
 		} else{
-			printf("Invalid argument\n");
+			printf("Invalid argument, must either be 0 or 1\n");
 			return -1;
 		}
 		mkdir(save_path, 0755);
@@ -116,10 +122,10 @@ int main(int argc, char** argv) {
 		mkdir(save_path, 0755);
 
 		strcat(command, save_path);
-		strcat(command, " | wc -l");
+		strcat(command, " | wc -l"); //Counts the number of lines piped into it
 		
-		ls = popen(command, "r");
-		fread(&size, sizeof(char), 5, ls);
+		ls = popen(command, "r"); //Run ls -l | wc -l
+		fread(&size, sizeof(char), 10, ls); //Get output from command
 		num_samples = atoi(size) -1;
 		pclose(ls);
 	}	
@@ -141,15 +147,9 @@ int main(int argc, char** argv) {
 	}
 
 	wiiuse_set_leds(wiimotes[0], WIIMOTE_LED_1);
+
 	wiiuse_rumble(wiimotes[0], 1);	
-
-	
-#ifndef WIIUSE_WIN32
 	usleep(200000);
-#else
-	Sleep(200);
-#endif
-
 	wiiuse_rumble(wiimotes[0], 0);
 	
 	wiiuse_set_flags(wiimotes[0], WIIUSE_CONTINUOUS,0 );
