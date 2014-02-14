@@ -11,7 +11,7 @@ from pybrain.datasets            import SequentialDataSet
 import globals
 import startup
 import load_samples
-
+import pickle
 def get_messages():
     with open(globals.WII_DATA_FILENAME,"r") as f:
         for line in f:
@@ -65,24 +65,28 @@ def test_net(net):
                 print "resetting"
                 net.reset()
             elif len(msg) > 1:
-                data = map(float, msg)[0:6]
+                data = map(float, msg)
                 out =  net.activate(data)
                 print out
                 out = zip(out, list(range(len(directions))))
                 print directions[max(out, key=lambda x: x[0])[1]]
 
-
+def left_right_filter(x):
+    return "left" in x or "right" in x
+def up_down_filter(x):
+    return "up" in x or "down" in x
 
 if __name__=="__main__":
-    startup.launch_c_code() 
-    net = build_net.build_network(6, 10, 4)
-    #samples = get_samples()
-    samples = load_samples.load_sequential_training_set()
+    startup.launch_c_code()
+    up_down_net = build_net.build_network(globals.NUM_INPUTS, 40, 4)
+
+    up_down_samples = load_samples.load_sequential_training_set()
+
     print "training"
-    print samples
-    build_net.train(net, samples)
+    build_net.train(up_down_net, up_down_samples)
+    #with open("trained_net", "r") as f:
+    #    up_down_net = pickle.load(f)
     print "done training, now enter test data"
-    test_net(net)
+    test_net(up_down_net)
     startup.close_c_code()
-    #print load_samples()
 
