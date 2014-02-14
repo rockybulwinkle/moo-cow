@@ -4,6 +4,7 @@
 from pybrain.structure import RecurrentNetwork
 from pybrain.structure import LinearLayer
 from pybrain.structure import SigmoidLayer
+from pybrain.structure import TanhLayer
 from pybrain.structure import FullConnection
 from pybrain.datasets            import SequentialDataSet
 from pybrain.utilities           import percentError
@@ -16,17 +17,18 @@ import sys
 import pickle
 
 def build_network(num_inputs, num_hidden, num_output):
-    #n = RecurrentNetwork() #create network
-    #n.addInputModule(LinearLayer(num_inputs, name="in")) #add input layer
-    #n.addModule(SigmoidLayer(num_hidden, name="hidden")) #add hidden layer
-    #n.addOutputModule(SigmoidLayer(num_output, name="out")) #add output layer
+    n = RecurrentNetwork() #create network
+    n.addInputModule(LinearLayer(num_inputs, name="in")) #add input layer
+    n.addModule(SigmoidLayer(num_hidden, name="hidden")) #add hidden layer
+    n.addModule(TanhLayer(num_hidden, name="hidden2")) #add hidden layer
+    n.addOutputModule(SigmoidLayer(num_output, name="out")) #add output layer
 
-    #n.addConnection(FullConnection(n["in"], n["hidden"])) #connect the input to the hidden
-    #n.addConnection(FullConnection(n["hidden"], n["out"])) #connect the hidden to the output
-    #n.addRecurrentConnection(FullConnection(n["out"], n["hidden"], name="recur")) #connect output of current hidden layer to input of the hidden layer for the next activation
-    #n.addRecurrentConnection(FullConnection(n["hidden"], n["hidden"], name="recur2")) #connect output of current hidden layer to input of the hidden layer for the next activation
-    n = buildNetwork(num_inputs, num_hidden, num_output, recurrent = True)
-    #n.sortModules() #done!
+    n.addConnection(FullConnection(n["in"], n["hidden"])) #connect the input to the hidden
+    n.addConnection(FullConnection(n["hidden"], n["hidden2"])) #connect the input to the hidden
+    n.addConnection(FullConnection(n["hidden2"], n["out"])) #connect the hidden to the output
+    n.addRecurrentConnection(FullConnection(n["out"], n["hidden"], name="recur")) #connect output of current hidden layer to input of the hidden layer for the next activation
+    n.addRecurrentConnection(FullConnection(n["hidden"], n["in"], name="recur2")) #connect output of current hidden layer to input of the hidden layer for the next activation
+    n.sortModules() #done!
     
 
     return n
@@ -51,7 +53,7 @@ def train(net, ds):
         done = True
     signal.signal(signal.SIGINT, signal_handler)
     net.randomize()
-    trainer = BackpropTrainer(net, ds, learningrate=.00001, batchlearning=True, lrdecay=.99)
+    trainer = BackpropTrainer(net, ds, learningrate=.0001, batchlearning=True, lrdecay=.99)
     for i in range(1000):
         x =  trainer.train()
         print "%d: %f"%(i,x)

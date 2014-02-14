@@ -78,7 +78,7 @@ def up_down_filter(x):
 
 if __name__=="__main__":
     startup.launch_c_code()
-    up_down_net = build_net.build_network(globals.NUM_INPUTS, 40, 4)
+    up_down_net = build_net.build_network(globals.NUM_INPUTS, 10, 4)
 
     up_down_samples = load_samples.load_sequential_training_set()
 

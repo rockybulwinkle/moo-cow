@@ -32,7 +32,11 @@ def load_samples(filter_key = None):
 def load_file(sample_file, class_):
     samples = []
     with open(sample_file, "r") as f:
+        x = 0
         for line in f:
+            x += 1
+            if x%3 == 0:
+                continue
             line = line.split()
             line = map(float, line)
             samples.append(line)
