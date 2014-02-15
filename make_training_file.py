@@ -7,7 +7,7 @@ import load_samples
 
 samples = load_samples.load_samples()
 new_samples = dict()
-for key in samples.keys():
+for key in sorted(samples.keys()):
     joined_samples = []
     for sample in samples[key]:
         for point in sample:
@@ -22,7 +22,7 @@ output_values = ["1 0 0 0", "0 1 0 0", "0 0 1 0", "0 0 0 1"]
 f = open("training_file", "w")
 f.write("%d 6 4\n"%num_samples)
 
-for idx, key in enumerate(new_samples):
+for idx, key in enumerate(sorted(new_samples.keys())):
     for sample in new_samples[key]:
         f.write(" ".join(map(str, sample)))
         f.write("\n")
