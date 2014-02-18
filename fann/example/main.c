@@ -1,4 +1,5 @@
 #include "fann.h"
+#include <math.h>
 
 int main()
 {
