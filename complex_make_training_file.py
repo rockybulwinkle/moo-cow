@@ -20,7 +20,7 @@ print "total number of samples: %d"%num_samples
 
 output_values = ["1 0", "0 1"]
 
-f = open("training_file", "w")
+f = open("complex_training_file", "w")
 
 f.write("%d 4 %d\n"%(num_samples, len(output_values)))
 
