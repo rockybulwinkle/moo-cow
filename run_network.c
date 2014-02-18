@@ -58,31 +58,37 @@ int main(int argc, char * args[]){
 		}
 	}else{
 		FILE * sample;
+		FILE * newSamples;
 		char filePath[100];
+		char filePathNew[100];
 		char message[100];
-		for(i=0; i<num_samples; i++){
-			sprintf(filePath, "%s%d", path, i);
-			printf("%s\n",filePath);	
-			sample = fopen(filePath, "r");
-			fread(message, sizeof(char), 100, sample);
-			fclose(sample);	
+		int j, k;
 
-			sprintf(filePath, "%s%d",PATH_TO_NEW_SAMPLES,i);
-			sample = fopen(filePath, "w+");
-			i=0;
-    	    token = strtok(message, " "); //Break up data stream
-	        while(token != NULL){
-        		input[i++] = atof(token);
-    	        token = strtok(NULL, " ");
-	        }
-            output = fann_run(ann, input); //run input through network
-            for(i=0; i<NUM_OUTPUTS; i++){
-				fprintf(sample, "%d ", i);
-    	        printf("%f ",output[i]);
-	        }
-			fprintf(sample,"\n");
-          	printf("\n");
-			fclose(sample);
+		for(i=0; i<num_samples; i++){
+			sprintf(filePath, "%s%d", path, i);	
+			sample = fopen(filePath, "r");
+
+			sprintf(filePathNew, "%s%s/", PATH_TO_NEW_SAMPLES, args[1]);
+			mkdir(filePathNew, 0755);
+			sprintf(filePathNew, "%s%d", filePathNew, i);
+			newSamples = fopen(filePathNew, "w+");
+
+			while(fscanf(sample, "%s\n", message)!=EOF){
+				j=0;
+	    	    token = strtok(message, " "); //message stream
+		        while(token != NULL){
+        			input[j++] = atof(token);
+    	    	    token = strtok(NULL, " ");
+		        }
+    	        output = fann_run(ann, input); //run input through network
+        	    for(k=0; k<NUM_OUTPUTS; k++){
+					fprintf(newSamples, "%f ", output[k]);
+    	        	//printf("%f ",output[k]);
+		        }
+				fprintf(newSamples, "\n");
+			}
+			fclose(newSamples);
+			fclose(sample);	
 		}
 	}
 }
