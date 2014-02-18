@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-gcc main.c -lm -lfann -o fann_test
+gcc main.c -o fann_test -lm -lfann
