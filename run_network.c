@@ -12,48 +12,50 @@
 #define NUM_INPUTS 6
 #define NUM_OUTPUTS 4
 
+int getNumOfSamples(char * path){
+	char command[100] = "ls -l ";
+    char size[10];
+    FILE * ls;
+    strcat(command, path);
+    strcat(command, " | wc -l");
+    ls = popen(command, "r");
+    fread(&size, sizeof(char), 10, ls);
+    pclose(ls);
+	return atoi(size)-1;
+}
+
+FANN_EXTERNAL fann_type * getOutput(char * data, struct fann * ann){
+	int	i=0;
+	char * token;
+	FANN_EXTERNAL fann_type input[NUM_INPUTS];
+    token = strtok(data, " "); //Break up data stream
+	while(token != NULL){
+    	input[i++] = atof(token);
+    	token = strtok(NULL, " ");
+	}
+    return fann_run(ann, input); //run input through network
+}
+
 int main(int argc, char * args[]){
     char data[50]; //Arbitrary length
 	char path[100];
-    char * token;
-    FANN_EXTERNAL fann_type input[NUM_INPUTS];
     FANN_EXTERNAL fann_type * output;
-    int num_samples, i;
+    int num_samples, i, fd;
+	struct fann * ann;
     
-    if(argc==2){
-        
-        char command[100] = "ls -l ";
-        char size[10];
-        FILE * ls;
+    if(argc==2){        
         sprintf(path, "%s%s/", PATH_TO_SAMPLES, args[1]);
-        strcat(command, path);
-        strcat(command, " | wc -l");
-
-        ls = popen(command, "r");
-        fread(&size, sizeof(char), 10, ls);
-        num_samples = atoi(size)-1;
-        pclose(ls);
+        num_samples = getNumOfSamples(path);
         printf("Sample count: %d\n", num_samples);
     }
 
-    int fd = open(PATH_TO_WII_PIPE, 0666);
-    struct fann *ann = fann_create_from_file(PATH_TO_NETWORK);
-
+    fd = open(PATH_TO_WII_PIPE, 0666);
+    ann = fann_create_from_file(PATH_TO_NETWORK);
 
 	if(argc==1){
 	    while(1){
 	        if(read(fd,data, 50)!=0){ //Read from pipe
-        	    i=0;
-    	        token = strtok(data, " "); //Break up data stream
-	            while(token != NULL){
-        	        input[i++] = atof(token);
-    	            token = strtok(NULL, " ");
-	            }
-            	output = fann_run(ann, input); //run input through network
-        	    for(i=0; i<NUM_OUTPUTS; i++){
-    	            printf("%f ",output[i]);
-	            }
-            	printf("\n");
+				output = getOutput(data, ann);
 			}
 		}
 	}else{
@@ -74,16 +76,9 @@ int main(int argc, char * args[]){
 			newSamples = fopen(filePathNew, "w+");
 
 			while(fscanf(sample, "%s\n", message)!=EOF){
-				j=0;
-	    	    token = strtok(message, " "); //message stream
-		        while(token != NULL){
-        			input[j++] = atof(token);
-    	    	    token = strtok(NULL, " ");
-		        }
-    	        output = fann_run(ann, input); //run input through network
+    	        output = getOutput(data, ann);
         	    for(k=0; k<NUM_OUTPUTS; k++){
 					fprintf(newSamples, "%f ", output[k]);
-    	        	//printf("%f ",output[k]);
 		        }
 				fprintf(newSamples, "\n");
 			}
@@ -92,3 +87,5 @@ int main(int argc, char * args[]){
 		}
 	}
 }
+
+
