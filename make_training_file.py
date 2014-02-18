@@ -5,7 +5,7 @@ this file creates a training file for FANN based on the data created by wiiuse/c
 """
 import load_samples
 
-samples = load_samples.load_samples()
+samples = load_samples.load_samples(input_directory="wiiuse/samples/simple/")
 new_samples = dict()
 for key in sorted(samples.keys()):
     joined_samples = []
