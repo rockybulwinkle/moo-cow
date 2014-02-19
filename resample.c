@@ -30,7 +30,11 @@ int main(int argc, char * argv[]){
 	src_data.output_frames = out_size;
 	src_data.src_ratio = out_size/((float)in_size);
 
-	src_simple(&src_data, 4, 4);
+	int ret_val = src_simple(&src_data, 4, 4);
+	if (ret_val){
+		printf("%s\n", src_strerror(ret_val));
+		printf("frames used: %d frames generated: %d\n", src_data.input_frames_used, src_data.output_frames_gen);
+	}
 	FILE * out_file = fopen(argv[3], "w");
 	for (i = 0; i < out_size * 4; i += 4){
 		fprintf(out_file,"%f %f %f %f\n", src_data.data_out[i], src_data.data_out[i+1], src_data.data_out[i+2], src_data.data_out[i+3]);

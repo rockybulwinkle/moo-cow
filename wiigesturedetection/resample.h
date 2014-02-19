@@ -7,4 +7,4 @@ num_samples is then length of the gesture
 
 num_output is the number of inputs to the second neural network
 */
-float * resample(float ** input, int input_width int num_samples, int num_output);
+float * resample(float ** input, int input_width, int num_samples, int num_output);
