@@ -6,6 +6,9 @@ this file creates a training file for FANN based on the data created by wiiuse/c
 import load_samples
 import os
 
+NUM_SAMPLES = 100
+NUM_BASIC_MOTIONS = 4
+
 samples = load_samples.load_samples(get_file_name_only = True, input_directory="samples/")
 new_samples = dict()
 for key in sorted(samples.keys()):
@@ -18,11 +21,19 @@ for key in sorted(samples.keys()):
 num_samples = sum(map(lambda x: len(new_samples[x]), new_samples)) #get number of samples
 print "total number of samples: %d"%num_samples
 
-output_values = ["1 0", "0 1"]
+print len(samples.keys())
+output_values = []
+for i in range(len(samples.keys())):
+    output = [0]*len(samples.keys())
+    output[i] = 1
+    output = map(str, output)
+    output = " ".join(output)
+    output_values.append(output)
+print output_values
 
 f = open("complex_training_file", "w")
 
-f.write("%d 400 %d\n"%(num_samples, len(output_values)))
+f.write("%d %d %d\n"%(num_samples, NUM_SAMPLES*NUM_BASIC_MOTIONS, len(output_values)))
 
 for idx, key in enumerate(sorted(new_samples.keys())):
     for sample in  new_samples[key]:
@@ -43,6 +54,7 @@ for idx, key in enumerate(sorted(new_samples.keys())):
                 line = map(str, line)
                 line = " ".join(line)
                 f.write(line+" ")
+                print line
                 
         #f.write(" ".join(map(str, sample)))
         f.write("\n")
