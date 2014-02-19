@@ -49,6 +49,8 @@ int main(int argc, char * args[]){
     int num_samples, i, fd;
 	struct fann * ann;
 	struct fann * ann2;
+	SRC_DATA src_data;
+	src_data.data_in = malloc(sizeof(float)**4)
     
     if(argc==2){        
         sprintf(path, "%s%s/", PATH_TO_SAMPLES, args[1]);
@@ -74,7 +76,7 @@ int main(int argc, char * args[]){
 	}else{
 		FILE * sample;
 		FILE * newSamples;
-		char filePath[100];
+		char filePath[100]
 		char filePathNew[100];
 		char message[100];
 		int j, k;
@@ -89,7 +91,7 @@ int main(int argc, char * args[]){
 			newSamples = fopen(filePathNew, "w+");
 
 			while(fscanf(sample, "%s\n", message)!=EOF){
-    	        output = getOutput(data, ann, NUM_INPUTS);
+    	        output = getOutput(message, ann, NUM_INPUTS);
         	    for(k=0; k<NUM_OUTPUTS; k++){
 					fprintf(newSamples, "%f ", output[k]);
 		        }
@@ -99,6 +101,7 @@ int main(int argc, char * args[]){
 			fclose(sample);	
 		}
 	}
+	return 0;
 }
 
 
