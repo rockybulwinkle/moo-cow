@@ -73,13 +73,18 @@ int main(int argc, char * args[]){
 			sprintf(filePathNew, "%s%d", filePathNew, i);
 			newSamples = fopen(filePathNew, "w+");
 
-			while(fscanf(sample, "%s\n", message)!=EOF){
+			while(fscanf(sample, "%[^\n]%*c", message)!=EOF){
 				j=0;
+				printf("%s\n", message);
 	    	    token = strtok(message, " "); //message stream
+
 		        while(token != NULL){
-        			input[j++] = atof(token);
+        			input[j] = atof(token);
+//					printf("%f, %d; ", atof(token), j);
+					j++;
     	    	    token = strtok(NULL, " ");
 		        }
+//				printf("\n");
     	        output = fann_run(ann, input); //run input through network
         	    for(k=0; k<NUM_OUTPUTS; k++){
 					fprintf(newSamples, "%f ", output[k]);
