@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <samplerate.h>
 #include "fann.h"
 
 #define PATH_TO_WII_PIPE "wiiuse/wiidata"
