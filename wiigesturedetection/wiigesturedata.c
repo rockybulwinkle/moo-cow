@@ -241,10 +241,13 @@ void process_test_data(char * dir_path, struct fann *ann1, struct fann *ann2){
 	for(i=0; i<6; i++){
 		printf("%s:\t\t\t%d\n", gestures[i], results[i]);
 	}
-	printf("\nTotal files:\t\t%d\n", num_files);
+	printf("\nTotal files:\t\t%d\n\n\n", num_files);
 }
 
 int main(int argc, char * argv[]){
+	if (argc == 4){
+		printf("%s\n", argv[3]);
+	}
 	char * path_nn1; //path to first layer of network
 	char * path_nn2; //path to second layer
 	int fd_pipe; //file descriptor to wii data pipe
