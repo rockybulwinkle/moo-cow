@@ -10,6 +10,8 @@
 
 #define PATH_TO_WIIDATA "wiidata"
 
+char  gestures[8][30] = {"ccwcircle","cwcircle","down","left","leftrightleft", "right", "rightleftright", "up"}; 
+
 
 void process(struct fann *ann1, struct fann *ann2, int fd){
 	char data[100];
@@ -20,7 +22,8 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 	int gesture_complete =0;
 	int num_input_ann1 = ann1->num_input;
 	int num_output_ann1 = ann1->num_output;
-	float high, high_index;
+	float high;
+	int high_index;
 	float input_ann1[num_input_ann1];
 	float ** output_ann1;
 	float * input_ann2;
@@ -84,11 +87,21 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 	printf("\n\n");
 
 	output_ann2 = fann_run(ann2, input_ann2);
+	high = FLT_MIN;
+	high_index = 0;
+	for(k=0; k<ann2->num_output; k++){
+		if(output_ann2[k]>high){
+			high = output_ann2[k];
+			high_index =k;
+		}
+	}
 
 	for(i=0; i<ann2->num_output; i++){
 		printf("%f ",output_ann2[i]);
 	}
 	printf("\n");
+
+	printf("I think that you did: %s\n", gestures[high_index]);
 	
 
 //	for(i=0; i<currentsize; i++){
