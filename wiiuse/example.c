@@ -116,10 +116,13 @@ int main(int argc, char** argv) {
 			strcat(save_path, "simple/");
 		}else if(commandType == 1){
 			strcat(save_path, "advanced/");
+		}else if(commandType == 2){
+			strcat(save_path, "test/");
 		} else{
 			printf("Invalid argument, must either be 0 or 1\n");
 			return -1;
 		}
+		printf("\x1B[41mSaving data in %s\x1B[0m\n", save_path);
 		mkdir(save_path, 0755);
 		strcat(save_path, argv[1]);
 		strcat(save_path, "/");
