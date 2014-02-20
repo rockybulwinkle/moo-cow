@@ -26,10 +26,10 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 			wiiuse_motion_sensing(wm, 1);
 		}
 
-		sprintf(message, "%f %f %f %d %d %d",
+		sprintf(message, "%f %f %f %f %f %f",
 			wm->gforce.x, wm->gforce.y, wm->gforce.z,
-			wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
-			wm->exp.mp.raw_gyro.yaw);
+			wm->exp.mp.angle_rate_gyro.pitch, wm->exp.mp.angle_rate_gyro.roll,
+			wm->exp.mp.angle_rate_gyro.yaw);
 
 		//X Y Z Pitch Roll Yaw
 		if(mode == 0){//print to pipe			

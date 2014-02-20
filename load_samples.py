@@ -33,12 +33,14 @@ def load_samples(input_directory = "", filter_key = None, get_file_name_only = F
 
 def load_file(sample_file):
     samples = []
+    print sample_file
     with open(sample_file, "r") as f:
         x = 0
         for line in f:
+            #print line
             x += 1
-            if x%3 == 0:
-                continue
+            #if x%3 == 0:
+            #    continue
             line = line.split()
             line = map(float, line)
             samples.append(line)

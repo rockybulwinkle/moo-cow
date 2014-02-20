@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <float.h>
 #include "fann.h"
 
 #define PATH_TO_WII_PIPE "wiiuse/wiidata"
@@ -12,10 +13,11 @@
 #define NUM_INPUTS 6
 #define NUM_OUTPUTS 4
 
-const float calibration[] = {7881.3725, 8012.1775, 8354.2725};
-
+//const float calibration[] = {7881.3725, 8012.1775, 8354.2725};
+const float calibration[] = {0,0,0};
+char output_names[4][30]={"down", "left", "right","up"};
 int main(int argc, char * args[]){
-    char data[50]; //Arbitrary length
+    char data[100]; //Arbitrary length
 	char path[100];
     char * token;
     FANN_EXTERNAL fann_type input[NUM_INPUTS];
@@ -44,7 +46,7 @@ int main(int argc, char * args[]){
 
 	if(argc==1){
 	    while(1){
-	        if(read(fd,data, 50)!=0){ //Read from pipe
+	        if(read(fd,data, 100)!=0){ //Read from pipe
         	    i=0;
     	        token = strtok(data, " "); //Break up data stream
 	            while(token != NULL){
@@ -52,12 +54,22 @@ int main(int argc, char * args[]){
     	            token = strtok(NULL, " ");
 	            }
             	output = fann_run(ann, input); //run input through network
+		    int max_index = 0;
+		    float max_value = FLT_MIN;
         	    for(i=0; i<NUM_OUTPUTS; i++){
-    	            printf("%f ",output[i]);
+		        if (output[i] > max_value){
+		    	    max_value = output[i];
+			    max_index = i;
+		        }
 	            }
-            	printf("\n");
-			}
+		    printf("%s ", output_names[max_index]);
+		    for(i=0; i<NUM_OUTPUTS; i++){
+    	                printf("%f ",output[i]);
+	            }
+
+            	    printf("\n");
 		}
+	    }
 	}else{
 		FILE * sample;
 		FILE * newSamples;

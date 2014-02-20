@@ -7,7 +7,7 @@ import load_samples
 import os
 
 NUM_SAMPLES = 100
-NUM_BASIC_MOTIONS = 4
+NUM_BASIC_MOTIONS = 7
 
 samples = load_samples.load_samples(get_file_name_only = True, input_directory="samples/")
 new_samples = dict()
@@ -42,7 +42,7 @@ for idx, key in enumerate(sorted(new_samples.keys())):
             for line in input_file:
                 input_length += 1
 
-        print input_length
+        #print input_length
         os.system("./resample %s %d %s %d"%(sample, input_length, "/tmp/wii_out_file", 100))
         with open("/tmp/wii_out_file", "r") as tmp_file:
             for line in tmp_file:
@@ -55,11 +55,9 @@ for idx, key in enumerate(sorted(new_samples.keys())):
                 line = map(str, line)
                 line = " ".join(line)
                 f.write(line+" ")
-				print line
                 
         #f.write(" ".join(map(str, sample)))
         f.write("\n")
         f.write(output_values[idx])
         f.write("\n")
-		print sample
 f.close()

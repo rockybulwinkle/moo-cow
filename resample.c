@@ -29,6 +29,7 @@ int main(int argc, char * argv[]){
 	src_data.input_frames = in_size;
 	src_data.output_frames = out_size;
 	src_data.src_ratio = out_size/((float)in_size);
+	printf("%f\n", src_data.src_ratio);
 
 	int ret_val = src_simple(&src_data, 4, 7);
 	if (ret_val){
