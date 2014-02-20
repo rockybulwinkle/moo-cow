@@ -54,7 +54,6 @@ for idx, key in enumerate(sorted(new_samples.keys())):
                 line = map(str, line)
                 line = " ".join(line)
                 f.write(line+" ")
-                print line
                 
         #f.write(" ".join(map(str, sample)))
         f.write("\n")
