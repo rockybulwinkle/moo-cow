@@ -45,10 +45,10 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 			fclose(fp);
 		
 		}
-		printf( "%d %d %d %d %d %d\n gforce: %f %f %f\n",
+		printf( "%d %d %d %f %f %f\n gforce: %f %f %f\n",
 			wm->accel.x, wm->accel.y, wm->accel.z,
-			wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
-			wm->exp.mp.raw_gyro.yaw,
+			wm->exp.mp.angle_rate_gyro.pitch, wm->exp.mp.angle_rate_gyro.roll,
+			wm->exp.mp.angle_rate_gyro.yaw,
             wm->gforce.x, wm->gforce.y, wm->gforce.z);
         				
 	} else{

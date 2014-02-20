@@ -17,7 +17,7 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 	char data[100];
 	int i, j, k;
 	char * token;
-	int maxsize = 10;
+	int maxsize = 1;
 	int currentsize=0;
 	int gesture_complete =0;
 	int num_input_ann1 = ann1->num_input;
@@ -31,6 +31,7 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 	float * temp_output;
 	//allocate memory for outputs
 	output_ann1 = (float **) malloc(maxsize*sizeof(float *));
+	float gyro[]={0,0,0};
 
 	while(!gesture_complete){
 		if(read(fd,data,100)!=0){ //read from pipe
@@ -48,7 +49,10 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 			if(!gesture_complete){
 				//Run input through first layer
 				temp_output = fann_run(ann1, input_ann1);
-				output_ann1[currentsize] = (float *) malloc(num_output_ann1*sizeof(float));
+				gyro[0] += input_ann1[3];
+				gyro[1] += input_ann1[4];
+				gyro[2] += input_ann1[5];
+				output_ann1[currentsize] = (float *) malloc((num_output_ann1+3)*sizeof(float));
 				high = FLT_MIN;
 				high_index =0;
 				for(k=0; k<num_output_ann1; k++){
@@ -67,6 +71,9 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 						output_ann1[currentsize][k] = 0;
 					}
 				}
+				output_ann1[currentsize][num_output_ann1] = gyro[0];
+				output_ann1[currentsize][num_output_ann1+1] = gyro[1];
+				output_ann1[currentsize][num_output_ann1+2] = gyro[2];
 				++currentsize;
 				//resize outputs if necessary
 				if(currentsize == maxsize){
@@ -77,7 +84,7 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 		}
 	}
 
-	input_ann2 = resample(output_ann1, num_output_ann1, currentsize, ann2->num_input);
+	input_ann2 = resample(output_ann1, num_output_ann1+3, currentsize, ann2->num_input);
 	output_ann2 = fann_run(ann2, input_ann2);
 
 	high = FLT_MIN;
