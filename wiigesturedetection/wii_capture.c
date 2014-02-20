@@ -26,7 +26,7 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 			wiiuse_motion_sensing(wm, 1);
 		}
 
-		sprintf(message, "%f %f %f %d %d %d\n",
+		sprintf(message, "%f %f %f %d %d %d",
 			wm->gforce.x, wm->gforce.y, wm->gforce.z,
 			wm->exp.mp.raw_gyro.pitch, wm->exp.mp.raw_gyro.roll,
 			wm->exp.mp.raw_gyro.yaw);
@@ -64,9 +64,9 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 			}		
 		}else{
 			if(mode==0){ //Indicate that data transmission has stopped
-//				fd = open(PIPE, O_WRONLY);
-//				write(fd, "stop\n", strlen("stop\n") +1);
-//				close(fd);
+				fd = open(PIPE, O_WRONLY);
+				write(fd, "stop", strlen("stop\n") +1);
+				close(fd);
 			}else{
 				*num_samples = *num_samples + 1; //If the b button was released,
                                                  //increment the num of training samples
