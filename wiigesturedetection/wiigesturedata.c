@@ -33,10 +33,8 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 	output_ann1 = (float **) malloc(maxsize*sizeof(float *));
 
 	while(!gesture_complete){
-
 		if(read(fd,data,100)!=0){ //read from pipe
 			i=0;
-//			printf("%s\n",data);
 			token = strtok(data, " ");
 			while(token != NULL){ //save to input[]
 				if(!strcmp(token,"stop")){
@@ -80,13 +78,8 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 	}
 
 	input_ann2 = resample(output_ann1, num_output_ann1, currentsize, ann2->num_input);
-
-	for(i=0; i<ann2->num_input; i+=4){
-		printf("%f %f %f %f\n",input_ann2[i], input_ann2[i+1], input_ann2[i+2], input_ann2[i+3]);
-	}
-	printf("\n\n");
-
 	output_ann2 = fann_run(ann2, input_ann2);
+
 	high = FLT_MIN;
 	high_index = 0;
 	for(k=0; k<ann2->num_output; k++){
@@ -103,14 +96,11 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 
 	printf("I think that you did: %s\n", gestures[high_index]);
 	
-
-//	for(i=0; i<currentsize; i++){
-//		printf("Output%d: ",i);		
-//		for(j=0; j<num_output_ann1; j++){
-//			printf("%f ",output_ann1[i][j]);
-//		}
-//		printf("\n");
-//	}
+	//free data
+	for(i=0; i< currentsize; i++){
+		free(output_ann1[i]);
+	}
+	free(output_ann1);
 }
 
 int main(int argc, char * argv[]){
