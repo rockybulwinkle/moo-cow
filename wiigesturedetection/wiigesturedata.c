@@ -3,8 +3,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <float.h>
 
 #include "fann.h"
+#include "resample.h"
 
 #define PATH_TO_WIIDATA "wiidata"
 
@@ -18,8 +20,11 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 	int gesture_complete =0;
 	int num_input_ann1 = ann1->num_input;
 	int num_output_ann1 = ann1->num_output;
+	float high, high_index;
 	float input_ann1[num_input_ann1];
 	float ** output_ann1;
+	float * input_ann2;
+	float * output_ann2;
 	float * temp_output;
 	//allocate memory for outputs
 	output_ann1 = (float **) malloc(maxsize*sizeof(float *));
@@ -28,7 +33,7 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 
 		if(read(fd,data,100)!=0){ //read from pipe
 			i=0;
-			printf("%s\n",data);
+//			printf("%s\n",data);
 			token = strtok(data, " ");
 			while(token != NULL){ //save to input[]
 				if(!strcmp(token,"stop")){
@@ -43,8 +48,23 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 				//Run input through first layer
 				temp_output = fann_run(ann1, input_ann1);
 				output_ann1[currentsize] = (float *) malloc(num_output_ann1*sizeof(float));
+				high = FLT_MIN;
+				high_index =0;
 				for(k=0; k<num_output_ann1; k++){
-					output_ann1[currentsize][k] = temp_output[k];
+					if(temp_output[k]>high){
+						high = temp_output[k];
+						high_index =k;
+					}
+//					output_ann1[currentsize][k] = temp_output[k];
+				}
+
+				for(k=0; k<num_output_ann1; k++){
+					if(k == high_index){
+						output_ann1[currentsize][k] = 1;
+					}
+					else{
+						output_ann1[currentsize][k] = 0;
+					}
 				}
 				++currentsize;
 				//resize outputs if necessary
@@ -56,13 +76,28 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 		}
 	}
 
-	for(i=0; i<currentsize; i++){
-		printf("Output%d: ",i);		
-		for(j=0; j<num_output_ann1; j++){
-			printf("%f ",output_ann1[i][j]);
-		}
-		printf("\n");
+	input_ann2 = resample(output_ann1, num_output_ann1, currentsize, ann2->num_input);
+
+	for(i=0; i<ann2->num_input; i+=4){
+		printf("%f %f %f %f\n",input_ann2[i], input_ann2[i+1], input_ann2[i+2], input_ann2[i+3]);
 	}
+	printf("\n\n");
+
+	output_ann2 = fann_run(ann2, input_ann2);
+
+	for(i=0; i<ann2->num_output; i++){
+		printf("%f ",output_ann2[i]);
+	}
+	printf("\n");
+	
+
+//	for(i=0; i<currentsize; i++){
+//		printf("Output%d: ",i);		
+//		for(j=0; j<num_output_ann1; j++){
+//			printf("%f ",output_ann1[i][j]);
+//		}
+//		printf("\n");
+//	}
 }
 
 int main(int argc, char * argv[]){
