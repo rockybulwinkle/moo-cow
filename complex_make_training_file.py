@@ -46,11 +46,12 @@ for idx, key in enumerate(sorted(new_samples.keys())):
         os.system("./resample %s %d %s %d"%(sample, input_length, "/tmp/wii_out_file", 100))
         with open("/tmp/wii_out_file", "r") as tmp_file:
             for line in tmp_file:
+
                 line= line.replace("\n","")
                 line = line.split()
                 line = map(float, line)
-                max_ = max(line[:6])
-                line = map(lambda x: 1.0 if x == max_ else 0.0, line[:6])
+                max_ = max(line[:4])
+                line = map(lambda x: 1.0 if x == max_ else 0.0, line[:4])+line[4:]
                 line = map(str, line)
                 line = " ".join(line)
                 f.write(line+" ")
@@ -60,4 +61,5 @@ for idx, key in enumerate(sorted(new_samples.keys())):
         f.write("\n")
         f.write(output_values[idx])
         f.write("\n")
+		print sample
 f.close()

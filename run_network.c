@@ -12,6 +12,8 @@
 #define NUM_INPUTS 6
 #define NUM_OUTPUTS 4
 
+const float calibration[] = {7881.3725, 8012.1775, 8354.2725};
+
 int main(int argc, char * args[]){
     char data[50]; //Arbitrary length
 	char path[100];
@@ -92,7 +94,7 @@ int main(int argc, char * args[]){
     	        	//printf("%f ",output[k]);
 		        }
 				for(k = 3; k < 6; k++){
-					int_gyro[k-3] += input[k];
+					int_gyro[k-3] += input[k] - calibration[k-3];
 				}
 				fprintf(newSamples, "%f %f %f ", int_gyro[0], int_gyro[1], int_gyro[2]);
 
