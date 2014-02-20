@@ -49,11 +49,12 @@ for idx, key in enumerate(sorted(new_samples.keys())):
                 line= line.replace("\n","")
                 line = line.split()
                 line = map(float, line)
-                max_ = max(line)
-                line = map(lambda x: 1.0 if x == max_ else 0.0, line)
+                max_ = max(line[:6])
+                line = map(lambda x: 1.0 if x == max_ else 0.0, line[:6])
                 line = map(str, line)
                 line = " ".join(line)
                 f.write(line+" ")
+				print line
                 
         #f.write(" ".join(map(str, sample)))
         f.write("\n")

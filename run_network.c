@@ -72,7 +72,8 @@ int main(int argc, char * args[]){
 			mkdir(filePathNew, 0755);
 			sprintf(filePathNew, "%s%d", filePathNew, i);
 			newSamples = fopen(filePathNew, "w+");
-
+			
+			double int_gyro[3];
 			while(fscanf(sample, "%[^\n]%*c", message)!=EOF){
 				j=0;
 				printf("%s\n", message);
@@ -90,6 +91,11 @@ int main(int argc, char * args[]){
 					fprintf(newSamples, "%f ", output[k]);
     	        	//printf("%f ",output[k]);
 		        }
+				for(k = 3; k < 6; k++){
+					int_gyro[k-3] += input[k];
+				}
+				fprintf(newSamples, "%f %f %f ", int_gyro[0], int_gyro[1], int_gyro[2]);
+
 				fprintf(newSamples, "\n");
 			}
 			fclose(newSamples);
