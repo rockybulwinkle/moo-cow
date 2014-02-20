@@ -12,7 +12,7 @@
 #define SAMPLES					"samples"
 
 
-void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int mode) {	
+void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int mode, int * firstrun) {	
 	static int prev_state = 0;
 	static int current_state = 0; //State of 1 means gesture data is currently being collected
                                   //State of 0 means gesture data is not currently being collected
@@ -37,12 +37,14 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 			write(fd, message, strlen(message) +1);
 			close(fd);
 		}else{//print to file
-			FILE * fp;
-			char filepath[100]="";
-			sprintf(filepath,"%s%d",save_path, *num_samples); //Create path to file for current training sample
-			fp = fopen(filepath, "ab+");
-			fputs(message, fp);
-			fclose(fp);
+			if (!*firstrun){
+				FILE * fp;
+				char filepath[100]="";
+				sprintf(filepath,"%s%d",save_path, *num_samples); //Create path to file for current training sample
+				fp = fopen(filepath, "ab+");
+				fputs(message, fp);
+				fclose(fp);
+			}
 		
 		}
 		printf( "%d %d %d %d %d %d\n gforce: %f %f %f\n",
@@ -68,8 +70,11 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 //				write(fd, "stop\n", strlen("stop\n") +1);
 //				close(fd);
 			}else{
-				*num_samples = *num_samples + 1; //If the b button was released,
+				if(!*firstrun){
+					*num_samples = *num_samples + 1; //If the b button was released,
                                                  //increment the num of training samples
+				}
+				*firstrun = 0;
 			}
 		}
 	}
@@ -152,12 +157,13 @@ int main(int argc, char** argv) {
 	wiiuse_rumble(wiimotes[0], 0);
 	
 	wiiuse_set_flags(wiimotes[0], WIIUSE_CONTINUOUS,0 );
+	int first_run = 1;
 	while (WIIMOTE_IS_CONNECTED(wiimotes[0])) {
 		if (wiiuse_poll(wiimotes, MAX_WIIMOTES)) {
 			switch (wiimotes[0]->event) {
 				case WIIUSE_EVENT:
 					/* a generic event occurred */
-					handle_event(wiimotes[0], save_path, &num_samples, mode);
+					handle_event(wiimotes[0], save_path, &num_samples, mode, &first_run);
 					break;
 				default:
 					break;
