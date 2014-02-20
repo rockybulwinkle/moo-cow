@@ -6,7 +6,7 @@ int main()
     const unsigned int max_epochs = 50000;
     const unsigned int epochs_between_reports = 10;
 
-    unsigned int layers []= {400, 200, 200, 4};
+    unsigned int layers []= {400, 200, 200, 6};
     struct fann * ann = fann_create_standard_array(4, layers);
 
     fann_set_activation_function_layer(ann, FANN_SIGMOID_SYMMETRIC, 1);
