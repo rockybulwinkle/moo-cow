@@ -1,5 +1,7 @@
-~~~How to use this cow pie~~~
+Docotr Mu:  Check out wiigesturedetection for the main code, and fann for how we train our networks.
 
+
+~~~How to use our program~~~
 1. mkfifo in /wiiuse
 2. build wii_capture with wiiuse/build.sh
 3. capture basic up, down, left, right motions
