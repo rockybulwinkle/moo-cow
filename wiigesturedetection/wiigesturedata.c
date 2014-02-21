@@ -4,16 +4,51 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <float.h>
+#include <errno.h>
+#include <signal.h>
+#include <unistd.h>
 
 #include "fann.h"
 #include "resample.h"
 
 #define PATH_TO_WIIDATA "wiidata"
+#define PATH_TO_WII_PROCESS "./cow_capture"
 
-char  gestures[8][30] = {"ccwcircle","cwcircle","down","left","leftrightleft", "right", "rightleftright", "up"}; 
+char  gestures[6][30] = {"down","left","leftrightleft", "right", "rightleftright", "up"}; 
+int keepgoing=1;
 
+void signal_handler(int sig){
+	keepgoing=0;
+}
 
-void process(struct fann *ann1, struct fann *ann2, int fd){
+pid_t launch_wii_process(){
+	pid_t pid = fork();
+	
+	if(pid>=0){
+		if(pid ==0){
+			if(execlp(PATH_TO_WII_PROCESS, "wiimote", NULL) == -1){
+				int err = errno;
+				printf("Failed to execute wiimote process. ERRNO: %d\n",err);
+				return -1;	
+			}
+		}
+	} else{
+		printf("Wiimote process failed to start\n");
+		return -2;	
+	}
+	return pid;
+}
+
+int wait_on_signal(int pipe){
+	char data[30];
+	read(pipe, data, 30);
+	if(!strcmp(data,"ready")){
+		return 1;
+	}
+	return 0;
+}
+
+int process(struct fann *ann1, struct fann *ann2, int fd){
 	char data[100];
 	int i, j, k;
 	char * token;
@@ -42,6 +77,8 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 				if(!strcmp(token,"stop")){
 					gesture_complete = 1; //check for stop signal if gesture is complete
 					break;
+				}else if(!strcmp(token, "quit")){
+					return 0;
 				}else{
 					input_ann1[i++] = atof(token);
 					token = strtok(NULL, " ");
@@ -102,15 +139,7 @@ void process(struct fann *ann1, struct fann *ann2, int fd){
 	printf("\n");
 
 	printf("I think that you did: %s\n", gestures[high_index]);
-	
-
-//	for(i=0; i<currentsize; i++){
-//		printf("Output%d: ",i);		
-//		for(j=0; j<num_output_ann1; j++){
-//			printf("%f ",output_ann1[i][j]);
-//		}
-//		printf("\n");
-//	}
+	return 1;
 }
 
 int main(int argc, char * argv[]){
@@ -120,6 +149,7 @@ int main(int argc, char * argv[]){
 	struct fann *ann1;
 	struct fann *ann2;
 	int inputs_ann1, inputs_ann2;
+	pid_t wiimote;
 
 	if(argc != 3){
 		printf("Run the program as follows:\n"
@@ -136,8 +166,22 @@ int main(int argc, char * argv[]){
 	//setup pipe to wiidata
 	fd_pipe =open(PATH_TO_WIIDATA, 0666);
 	
-	while(1){
+	if((wiimote = launch_wii_process()) <0){
+		return 1;
+	}
+		
+	if(wait_on_signal(fd_pipe)){
+		printf("Wiimote detected successfully\n");
+	}else{
+		printf("No wiimotes detected\n");
+		return -3;
+	}
+	
+//	signal(SIGINT, signal_handler);
+	while(keepgoing){
 		process(ann1, ann2, fd_pipe);
 	}
-
+	printf("Killing wiimote process\n");
+	kill(wiimote, SIGINT);
+	return 0;
 }

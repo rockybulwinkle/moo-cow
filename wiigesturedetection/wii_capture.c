@@ -5,12 +5,18 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <string.h>
-#include <unistd.h>                     
+#include <unistd.h>
+#include <signal.h>                     
 
 #define MAX_WIIMOTES				1
 #define PIPE					"wiidata"
 #define SAMPLES					"samples"
 
+int keepgoing=1;
+
+void signal_handler(int sig){
+	keepgoing =0;
+}
 
 void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int mode) {	
 	static int prev_state = 0;
@@ -79,7 +85,7 @@ void handle_event(struct wiimote_t* wm, char * save_path, int * num_samples, int
 
 int main(int argc, char** argv) {
 	wiimote** wiimotes;
-	int found, connected, mode, commandType, num_samples;
+	int found, connected, mode, commandType, num_samples, fd;
 	//Mode = 1 save training data. Mode = 0 send data to pipe 
 	char save_path[100] = "";
 	
@@ -134,14 +140,23 @@ int main(int argc, char** argv) {
 	found = wiiuse_find(wiimotes, 1, 5);
 	if (!found) {
 		printf("No wiimotes found.\n");
+		fd = open(PIPE, O_WRONLY);
+		write(fd, "error", strlen("error") +1);
+		close(fd);
 		return 0;
 	}
 
 	connected = wiiuse_connect(wiimotes, MAX_WIIMOTES);
 	if (connected) {
 		printf("Connected to %i wiimotes (of %i found).\n", connected, found);
+		fd = open(PIPE, O_WRONLY);
+		write(fd, "ready", strlen("ready") +1);
+		close(fd);
 	} else {
 		printf("Failed to connect to any wiimote.\n");
+		fd = open(PIPE, O_WRONLY);
+		write(fd, "error", strlen("error") +1);
+		close(fd);
 		return 0;
 	}
 
@@ -152,7 +167,7 @@ int main(int argc, char** argv) {
 	wiiuse_rumble(wiimotes[0], 0);
 	
 	wiiuse_set_flags(wiimotes[0], WIIUSE_CONTINUOUS,0 );
-	while (WIIMOTE_IS_CONNECTED(wiimotes[0])) {
+	while (WIIMOTE_IS_CONNECTED(wiimotes[0]) && keepgoing) {
 		if (wiiuse_poll(wiimotes, MAX_WIIMOTES)) {
 			switch (wiimotes[0]->event) {
 				case WIIUSE_EVENT:
@@ -165,8 +180,10 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	wiiuse_cleanup(wiimotes, MAX_WIIMOTES
-);
+	wiiuse_cleanup(wiimotes, MAX_WIIMOTES);
+	fd = open(PIPE, O_WRONLY);
+	write(fd, "stop", strlen("stop") +1);
+	close(fd);
 
 	return 0;
 }
