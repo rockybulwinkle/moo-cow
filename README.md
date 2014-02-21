@@ -1,5 +1,9 @@
-Docotr Mu:  Check out wiigesturedetection for the main code, and fann for how we train our networks.
+For Dr. Mu:
+Our main program is located under the wiigesturedetection directory. wii_caputre.c connects to the wiimote and initializes the wiimote-related parameters and wiigesturedata.c launches the capture program and runs wiimote data through our networks. Run wiigesturedetection/build.sh to create the needed programs.
 
+The two neural networks must already have been created before running our program. These networks can be created by running fann/build.sh and then running the two programs that are created. More information about this can be found below. Samples  data will have already needed to be created before running these programs.
+
+Raw wiimote data can be found under wiiuse/samples/. The files located in this folder store information as follows: <accel.x> <accel.y>  <accel.z> <gyro.pitch> <gyro.roll> <gyro.yaw>
 
 ~~~How to use our program~~~
 1. mkfifo in /wiiuse
